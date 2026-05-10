@@ -586,6 +586,10 @@ function renderGrid(){
 
     img.src = cell.image;
 
+    img.onerror = () => {
+  btn.style.background = "#ff4d4d";
+};
+
     btn.appendChild(img);
 
     grid.appendChild(btn);
