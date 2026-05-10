@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+
+<title>Football Grid</title>
+
+<style>
+
+:root{
+  --bg:#edf6ff;
+  --card:rgba(255,255,255,.78);
+  --line:rgba(0,0,0,.08);
+
+  --blue:#4c8dff;
+  --red:#ff6577;
+  --yellow:#ffd84e;
+  --green:#3ad981;
+
+  --empty:#f6e6ff;
+
+  --text:#172133;
+  --muted:#66738a;
+}
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+body{
+  margin:0;
+  font-family:system-ui;
+  color:var(--text);
+
+  min-height:100svh;
+
+  background:
+  radial-gradient(circle at top left, rgba(76,141,255,.18), transparent 35%),
+  radial-gradient(circle at top right, rgba(58,217,129,.16), transparent 35%),
+  linear-gradient(var(--bg),#f8fbff);
+
+  padding:12px;
+}
+
+.app{
+  max-width:1000px;
+  margin:auto;
+  display:grid;
+  gap:14px;
+}
+
+.panel{
+  background:var(--card);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:16px;
+  box-shadow:0 10px 35px rgba(0,0,0,.08);
+}
+
+h1{
+  margin:0 0 8px;
+  font-size:clamp(34px,7vw,54px);
+  line-height:.95;
+}
+
+.muted{
+  color:var(--muted);
+}
+
+.setup{
+  display:grid;
+  gap:12px;
+}
+
+input,select,button{
+  width:100%;
+  border:none;
+  border-radius:18px;
+  padding:14px;
+  font:inherit;
+}
+
+input,select{
+  background:white;
+}
+
+button{
+  cursor:pointer;
+  font-weight:900;
+}
+
+.primary{
+  background:linear-gradient(135deg,#4eff9e,var(--green));
+}
+
+.secondary{
+  background:#dceaff;
+}
+
+.grid{
+  aspect-ratio:1;
+  display:grid;
+
+  grid-template-columns:repeat(5,1fr);
+  grid-template-rows:repeat(5,1fr);
+
+  gap:4px;
+
+  background:#10151f;
+  border-radius:22px;
+  overflow:hidden;
+
+  border:4px solid #10151f;
+}
+
+.cell{
+  background:linear-gradient(145deg,#ffeefe,var(--empty));
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+
+  position:relative;
+
+  transition:.15s;
+  animation:pop .3s ease;
+}
+
+.cell:hover{
+  transform:scale(1.03);
+}
+
+@keyframes pop{
+  from{
+    opacity:0;
+    transform:scale(.85);
+  }
+  to{
+    opacity:1;
+    transform:scale(1);
+  }
+}
+
+.cell img{
+  width:88%;
+  height:88%;
+  object-fit:contain;
+  pointer-events:none;
+}
+
+.claimed{
+  animation:claim .3s ease;
+}
+
+@keyframes claim{
+  0%{transform:scale(.9);}
+  60%{transform:scale(1.08);}
+  100%{transform:scale(1);}
+}
+
+.single{
+  background:linear-gradient(135deg,#86f3b7,var(--green));
+}
+
+.p1{
+  background:linear-gradient(135deg,#8ec3ff,var(--blue));
+}
+
+.p2{
+  background:linear-gradient(135deg,#ffadb7,var(--red));
+}
+
+.p3{
+  background:linear-gradient(135deg,#fff2a8,var(--yellow));
+}
+
+.old.single{
+  background:linear-gradient(135deg,#e2e6eb,#bcc5cf);
+  opacity:.8;
+}
+
+.old.p1{
+  background:linear-gradient(135deg,rgba(76,141,255,.28),rgba(76,141,255,.12));
+}
+
+.old.p2{
+  background:linear-gradient(135deg,rgba(255,101,119,.28),rgba(255,101,119,.12));
+}
+
+.old.p3{
+  background:linear-gradient(135deg,rgba(255,216,78,.32),rgba(255,216,78,.14));
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  padding:12px;
+  border-radius:16px;
+
+  background:rgba(255,255,255,.75);
+
+  margin-bottom:8px;
+}
+
+.dot{
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  display:inline-block;
+  margin-right:8px;
+}
+
+.b{background:var(--blue);}
+.r{background:var(--red);}
+.y{background:var(--yellow);}
+.g{background:var(--green);}
+
+.actions{
+  display:grid;
+  gap:10px;
+  margin-top:12px;
+}
+
+.hidden{
+  display:none;
+}
+
+@media(max-width:850px){
+
+  .layout{
+    grid-template-columns:1fr!important;
+  }
+
+  .grid{
+    width:100%;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<div class="panel">
+
+<h1>Football Grid</h1>
+
+<p class="muted">
+Nenne Spieler passend zu den Symbolen.
+</p>
+
+<div class="setup">
+
+<select id="players">
+<option value="1">1 Spieler</option>
+<option value="2">2 Spieler</option>
+<option value="3">3 Spieler</option>
+</select>
+
+<input id="names" placeholder="Namen optional: Anton, Max, Lea">
+
+<button class="primary" id="start">
+Spiel starten
+</button>
+
+</div>
+
+</div>
+
+<div class="layout hidden" id="game"
+style="
+display:grid;
+grid-template-columns:minmax(300px,700px) 280px;
+gap:14px;
+align-items:start;
+">
+
+<div class="panel">
+
+<div class="grid" id="grid"></div>
+
+<div class="actions">
+
+<button class="primary" id="turn">
+Zug beenden
+</button>
+
+<button class="secondary" id="restart">
+Neues Grid
+</button>
+
+</div>
+
+</div>
+
+<div class="panel">
+
+<div id="turninfo"></div>
+
+<div id="scores"></div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const CATEGORY_WEIGHTS = {
+  club:58,
+  nation:20,
+  league:15,
+  misc:7
+};
+
+const POOLS = {
+
+  club:[
+    "ajax.png",
+    "bayern.png",
+    "dortmund.png",
+    "koeln.png",
+    "leverkusen.png",
+    "schalke.png",
+    "leipzig.png",
+    "mainz.png"
+  ],
+
+  nation:[
+    "deutschland.png",
+    "england.png",
+    "brasilien.png",
+    "frankreich.png",
+    "spanien.png"
+  ],
+
+  league:[
+    "bundesliga.png",
+    "premierleague.png",
+    "laliga.png",
+    "ligue1.png",
+    "seriea.png"
+  ],
+
+  misc:[
+    "kapitaen.png",
+    "torwart.png",
+    "weltmeister.png",
+    "linksfuss.png"
+  ]
+
+};
+
+const state = {
+  playerCount:1,
+  players:[],
+  current:0,
+  rounds:0,
+  finished:false,
+  cells:[]
+};
+
+const grid = document.getElementById("grid");
+
+const game = document.getElementById("game");
+
+document.getElementById("start").onclick = startGame;
+document.getElementById("restart").onclick = startGame;
+document.getElementById("turn").onclick = endTurn;
+
+function startGame(){
+
+  state.playerCount = Number(
+    document.getElementById("players").value
+  );
+
+  const names =
+    document.getElementById("names")
+    .value
+    .split(",")
+    .map(x=>x.trim())
+    .filter(Boolean);
+
+  state.players = [];
+
+  for(let i=0;i<state.playerCount;i++){
+
+    state.players.push({
+      name:names[i] || `Spieler ${i+1}`,
+      score:0
+    });
+
+  }
+
+  state.current = 0;
+  state.rounds = 0;
+  state.finished = false;
+
+  state.cells = generateGrid();
+
+  game.classList.remove("hidden");
+
+  render();
+}
+
+function generateGrid(){
+
+  const cells = [];
+  const used = new Set();
+
+  while(cells.length < 25){
+
+    const type = weightedType();
+
+    const file =
+      POOLS[type][
+        Math.floor(Math.random()*POOLS[type].length)
+      ];
+
+    const key = type + file;
+
+    if(used.has(key)) continue;
+
+    used.add(key);
+
+    const folder =
+      type === "club"
+      ? "clubs"
+      : type === "nation"
+      ? "nations"
+      : type === "league"
+      ? "leagues"
+      : "misc";
+
+    cells.push({
+
+      image:`assets/logos/${folder}/${file}`,
+
+      claimedBy:null,
+      old:false
+
+    });
+
+  }
+
+  return cells;
+}
+
+function weightedType(){
+
+  const total =
+    Object.values(CATEGORY_WEIGHTS)
+    .reduce((a,b)=>a+b,0);
+
+  let roll = Math.random()*total;
+
+  for(const type in CATEGORY_WEIGHTS){
+
+    roll -= CATEGORY_WEIGHTS[type];
+
+    if(roll <= 0){
+      return type;
+    }
+
+  }
+
+  return "club";
+}
+
+function render(){
+
+  renderGrid();
+  renderScores();
+}
+
+function renderGrid(){
+
+  grid.innerHTML = "";
+
+  state.cells.forEach((cell,index)=>{
+
+    const btn =
+      document.createElement("button");
+
+    btn.className = "cell";
+
+    if(cell.claimedBy !== null){
+
+      btn.classList.add("claimed");
+
+      if(state.playerCount === 1){
+
+        btn.classList.add("single");
+
+      }else{
+
+        btn.classList.add(
+          ["p1","p2","p3"][cell.claimedBy]
+        );
+
+      }
+
+      if(cell.old){
+        btn.classList.add("old");
+      }
+
+    }
+
+    btn.onclick = ()=>claim(index);
+
+    const img =
+      document.createElement("img");
+
+    img.src = cell.image;
+
+    btn.appendChild(img);
+
+    grid.appendChild(btn);
+
+  });
+
+}
+
+function claim(index){
+
+  const cell = state.cells[index];
+
+  if(cell.claimedBy !== null) return;
+
+  cell.claimedBy = state.current;
+  cell.old = false;
+
+  state.players[state.current].score++;
+
+  render();
+
+  if(
+    state.cells.every(x=>x.claimedBy !== null)
+  ){
+    state.finished = true;
+  }
+
+}
+
+function endTurn(){
+
+  state.rounds++;
+
+  state.cells.forEach(cell=>{
+
+    if(cell.claimedBy !== null){
+
+      cell.old = true;
+
+    }
+
+  });
+
+  if(state.playerCount > 1){
+
+    state.current++;
+
+    if(state.current >= state.playerCount){
+
+      state.current = 0;
+
+    }
+
+  }
+
+  renderScores();
+  renderGrid();
+
+}
+
+function renderScores(){
+
+  const wrap =
+    document.getElementById("scores");
+
+  const turn =
+    document.getElementById("turninfo");
+
+  const current =
+    state.players[state.current];
+
+  turn.innerHTML = `
+  <div class="row">
+    <strong>
+      ${state.playerCount === 1 ? "Runden" : "Am Zug"}
+    </strong>
+
+    <strong>
+      ${state.playerCount === 1
+      ? state.rounds
+      : current.name}
+    </strong>
+  </div>
+  `;
+
+  wrap.innerHTML = "";
+
+  state.players.forEach((p,i)=>{
+
+    const row =
+      document.createElement("div");
+
+    row.className = "row";
+
+    const dot =
+      state.playerCount === 1
+      ? "g"
+      : ["b","r","y"][i];
+
+    row.innerHTML = `
+      <div>
+        <span class="dot ${dot}"></span>
+        ${p.name}
+      </div>
+
+      <strong>${p.score}</strong>
+    `;
+
+    wrap.appendChild(row);
+
+  });
+
+}
+
+</script>
+
+</body>
+</html>
