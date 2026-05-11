@@ -511,13 +511,9 @@ document.getElementById("turn").onclick = endTurn;
 
 function startGame(){
 
-  state.playerCount = Number(
-    document.getElementById("players").value
-  );
+  state.playerCount = Number(document.getElementById("players").value);
 
-  const names =
-    document.getElementById("names")
-    .value
+  const names = document.getElementById("names").value
     .split(",")
     .map(x=>x.trim())
     .filter(Boolean);
@@ -525,16 +521,22 @@ function startGame(){
   state.players = [];
 
   for(let i=0;i<state.playerCount;i++){
-
     state.players.push({
       name:names[i] || `Spieler ${i+1}`,
       score:0
     });
-
-  saveGame();
-
   }
 
+  state.current = 0;
+  state.rounds = 0;
+  state.finished = false;
+  state.cells = generateGrid();
+
+  game.classList.remove("hidden");
+
+  render();
+  saveGame();
+}
   state.current = 0;
   state.rounds = 0;
   state.finished = false;
@@ -679,14 +681,12 @@ function claim(index){
 
   state.players[state.current].score++;
 
-  saveGame();
-
-  if(
-    state.cells.every(x=>x.claimedBy !== null)
-  ){
+  if(state.cells.every(x=>x.claimedBy !== null)){
     state.finished = true;
   }
 
+  render();
+  saveGame();
 }
 
 function endTurn(){
@@ -694,32 +694,21 @@ function endTurn(){
   state.rounds++;
 
   state.cells.forEach(cell=>{
-
     if(cell.claimedBy !== null){
-
       cell.old = true;
-
-    saveGame();
-
     }
-
   });
 
   if(state.playerCount > 1){
-
     state.current++;
 
     if(state.current >= state.playerCount){
-
       state.current = 0;
-
     }
-
   }
 
-  renderScores();
-  renderGrid();
-
+  render();
+  saveGame();
 }
 
 function renderScores(){
