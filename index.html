@@ -537,16 +537,6 @@ function startGame(){
   render();
   saveGame();
 }
-  state.current = 0;
-  state.rounds = 0;
-  state.finished = false;
-
-  state.cells = generateGrid();
-
-  game.classList.remove("hidden");
-
-  render();
-}
 
 function generateGrid(){
 
