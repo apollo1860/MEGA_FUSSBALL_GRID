@@ -523,7 +523,8 @@ function startGame(){
   for(let i=0;i<state.playerCount;i++){
     state.players.push({
       name:names[i] || `Spieler ${i+1}`,
-      score:0
+      score:0,
+      turns:0
     });
   }
 
@@ -537,7 +538,6 @@ function startGame(){
   render();
   saveGame();
 }
-
 function generateGrid(){
 
   const cells = [];
@@ -689,9 +689,11 @@ function claim(index){
   render();
   saveGame();
 }
+  
 function endTurn(){
 
   state.rounds++;
+  state.players[state.current].turns++;
 
   state.cells.forEach(cell=>{
     if(cell.claimedBy !== null){
@@ -731,8 +733,6 @@ function renderScores(){
 
   wrap.innerHTML = "";
 
-  const divisor = Math.max(1, state.rounds);
-
   state.players.forEach((p,i)=>{
 
     const row = document.createElement("div");
@@ -742,6 +742,11 @@ function renderScores(){
       state.playerCount === 1
       ? "g"
       : ["b","r","y"][i];
+
+    const divisor =
+      state.playerCount === 1
+      ? Math.max(1, state.rounds)
+      : Math.max(1, p.turns || 0);
 
     const points = (p.score / divisor).toFixed(2);
 
