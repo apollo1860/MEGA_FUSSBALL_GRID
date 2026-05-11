@@ -664,7 +664,18 @@ function claim(index){
 
   const cell = state.cells[index];
 
-  if(cell.claimedBy !== null) return;
+  if(cell.claimedBy !== null){
+
+    if(cell.claimedBy === state.current && cell.old === false){
+      cell.claimedBy = null;
+      cell.old = false;
+      state.players[state.current].score--;
+      render();
+      saveGame();
+    }
+
+    return;
+  }
 
   cell.claimedBy = state.current;
   cell.old = false;
@@ -678,7 +689,6 @@ function claim(index){
   render();
   saveGame();
 }
-
 function endTurn(){
 
   state.rounds++;
@@ -703,36 +713,29 @@ function endTurn(){
 
 function renderScores(){
 
-  const wrap =
-    document.getElementById("scores");
-
-  const turn =
-    document.getElementById("turninfo");
-
-  const current =
-    state.players[state.current];
+  const wrap = document.getElementById("scores");
+  const turn = document.getElementById("turninfo");
+  const current = state.players[state.current];
 
   turn.innerHTML = `
-  <div class="row">
-    <strong>
-      ${state.playerCount === 1 ? "Runden" : "Am Zug"}
-    </strong>
+    <div class="row">
+      <strong>
+        ${state.playerCount === 1 ? "Runden" : "Am Zug"}
+      </strong>
 
-    <strong>
-      ${state.playerCount === 1
-      ? state.rounds
-      : current.name}
-    </strong>
-  </div>
+      <strong>
+        ${state.playerCount === 1 ? state.rounds : current.name}
+      </strong>
+    </div>
   `;
 
   wrap.innerHTML = "";
 
+  const divisor = Math.max(1, state.rounds);
+
   state.players.forEach((p,i)=>{
 
-    const row =
-      document.createElement("div");
-
+    const row = document.createElement("div");
     row.className = "row";
 
     const dot =
@@ -740,19 +743,24 @@ function renderScores(){
       ? "g"
       : ["b","r","y"][i];
 
+    const points = (p.score / divisor).toFixed(2);
+
     row.innerHTML = `
       <div>
         <span class="dot ${dot}"></span>
         ${p.name}
       </div>
 
-      <strong>${p.score}</strong>
+      <div style="text-align:right">
+        <strong>${p.score}</strong>
+        <div style="font-size:12px;color:#66738a">
+          ${points} Punkte/Zug
+        </div>
+      </div>
     `;
 
     wrap.appendChild(row);
-
   });
-
 }
 
 if(loadGame()){
