@@ -477,6 +477,30 @@ const state = {
   cells:[]
 };
 
+function saveGame(){
+
+  localStorage.setItem(
+    "footballGridSave",
+    JSON.stringify(state)
+  );
+
+}
+
+function loadGame(){
+
+  const save =
+    localStorage.getItem("footballGridSave");
+
+  if(!save) return false;
+
+  const parsed = JSON.parse(save);
+
+  Object.assign(state, parsed);
+
+  return true;
+
+}
+
 const grid = document.getElementById("grid");
 
 const game = document.getElementById("game");
@@ -506,6 +530,8 @@ function startGame(){
       name:names[i] || `Spieler ${i+1}`,
       score:0
     });
+
+  saveGame();
 
   }
 
@@ -653,7 +679,7 @@ function claim(index){
 
   state.players[state.current].score++;
 
-  render();
+  saveGame();
 
   if(
     state.cells.every(x=>x.claimedBy !== null)
@@ -672,6 +698,8 @@ function endTurn(){
     if(cell.claimedBy !== null){
 
       cell.old = true;
+
+    saveGame();
 
     }
 
@@ -745,6 +773,14 @@ function renderScores(){
     wrap.appendChild(row);
 
   });
+
+}
+
+if(loadGame()){
+
+  game.classList.remove("hidden");
+
+  render();
 
 }
 
