@@ -675,8 +675,20 @@ function renderGrid(){
 
     img.src = cell.image;
 
-    img.onerror = () => {
+img.onerror = () => {
   btn.style.background = "#ff4d4d";
+  btn.innerHTML = `
+    <div style="
+      font-size:10px;
+      font-weight:900;
+      color:white;
+      padding:4px;
+      text-align:center;
+      word-break:break-word;
+    ">
+      FEHLT:<br>${cell.image}
+    </div>
+  `;
 };
 
     btn.appendChild(img);
